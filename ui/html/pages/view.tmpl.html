@@ -1,0 +1,17 @@
+{{define "title"}}Reminder #{{.Reminder.ID}}{{end}}
+
+{{define "main"}}
+  {{with .Reminder}}
+  <div class='snippet'>
+    <div class='metadata'>
+      <strong>{{.Item}}</strong>
+      <span>#{{.ID}}</span>
+    </div>
+    <pre><code>{{.Description}}</code></pre>
+    <div class='metadata'>
+      <time>Created: {{humanDate .Created}}</time>
+      <time>Expires: {{humanDate .Due}}</time>
+    </div>
+  </div>
+  {{end}}
+{{end}}

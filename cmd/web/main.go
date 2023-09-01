@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -12,9 +13,10 @@ import (
 )
 
 type application struct {
-	errorLog  *log.Logger
-	infoLog   *log.Logger
-	reminders *models.ReminderModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	reminders     *models.ReminderModel
+	templateCache map[string]*template.Template
 }
 
 // The openDB() function wraps sql.Open() and returns a sql.DB connection pool
@@ -49,11 +51,18 @@ func main() {
 
 	defer db.Close()
 
+	// initialize new templateCache
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	// New instance of the application struct
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
+		errorLog:  errorLog,
+		infoLog:   infoLog,
 		reminders: &models.ReminderModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	srv := &http.Server{

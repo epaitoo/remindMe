@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
-	// "html/template"
 	"net/http"
 	"strconv"
 
@@ -22,28 +22,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, reminder := range reminders {
-		fmt.Fprintf(w, "%+v\n", reminder)
-	}
+	data := app.newTemplateData(r)
+	data.Reminders = reminders
 
-	// files := []string{
-	// 	"./ui/html/base.tmpl.html",
-	// 	"./ui/html/partials/nav.tmpl.html",
-	// 	"./ui/html/pages/home.tmpl.html",
-	// }
-
-	// ts, err := template.ParseFiles(files...)
-	// if err != nil {
-	// 	// app.errorLog.Print(err.Error())
-	// 	app.serverError(w, err)
-	// 	return
-	// }
-	
-	// err = ts.ExecuteTemplate(w, "base", nil)
-	// if err != nil {
-	// 	app.errorLog.Print(err.Error())
-	// 	app.serverError(w, err)
-	// }
+	app.render(w, http.StatusOK, "home.tmpl.html", data)
 }
 
 
@@ -64,9 +46,10 @@ func (app *application) reminderView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	data := app.newTemplateData(r)
+	data.Reminder = reminder
 
-	fmt.Fprintf(w, "%+v", reminder)
-
+	app.render(w, http.StatusOK, "view.tmpl.html", data)
 }
 
 
@@ -90,4 +73,31 @@ func (app *application) reminderCreate(w http.ResponseWriter, r *http.Request) {
 
 	// Redirect the user to the newly created Reminder
 	http.Redirect(w, r, fmt.Sprintf("/reminder/view?id=%d", id), http.StatusSeeOther)
+}
+
+
+func (app *application) render(w http.ResponseWriter, status int, page string, data *templateData)  {
+	// retrieve the page
+	ts, ok := app.templateCache[page]
+
+	if !ok {
+		err := fmt.Errorf("the template %s does not exist", page)
+		app.serverError(w, err)
+		return
+	}
+
+	// Initialize a new buffer.
+	buf := new(bytes.Buffer)
+	err := ts.ExecuteTemplate(buf, "base", data)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// Write out the provided HTTP status code
+	w.WriteHeader(status)
+
+	buf.WriteTo(w)
+
+	
 }

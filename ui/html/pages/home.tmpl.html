@@ -2,5 +2,22 @@
 
 {{define "main"}}
   <h2>Latest Reminders</h2>
-  <p>There's nothing to see here yet!</p>
+  {{if .Reminders}}
+  <table>
+    <tr>
+      <th>Item</th>
+      <th>Created</th>
+      <th>ID</th>
+    </tr>
+    {{range .Reminders}}
+    <tr>
+      <td><a href='/reminder/view?id={{.ID}}'>{{.Item}}</a></td>
+      <td>{{humanDate .Created}}</td>
+      <td>#{{.ID}}</td>
+    </tr>
+    {{end}}
+  </table>
+  {{else}}
+    <p>There's nothing to see here yet!</p>
+  {{end}}
 {{end}}
