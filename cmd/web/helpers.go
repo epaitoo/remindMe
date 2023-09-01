@@ -22,5 +22,5 @@ func (app *application) clientError(w http.ResponseWriter, status int) {
 
 //Not found helper
 func (app *application) notFound(w http.ResponseWriter) {
-	app.clientError(w, http.StatusFound)
+	app.clientError(w, http.StatusNotFound)
 }
